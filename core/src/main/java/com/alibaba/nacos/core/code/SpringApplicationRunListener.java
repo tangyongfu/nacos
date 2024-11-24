@@ -20,7 +20,6 @@ import com.alibaba.nacos.common.spi.NacosServiceLoader;
 import com.alibaba.nacos.core.listener.NacosApplicationListener;
 import org.springframework.boot.ConfigurableBootstrapContext;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.event.EventPublishingRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -28,7 +27,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import java.util.Collection;
 
 /**
- * {@link org.springframework.boot.SpringApplicationRunListener} before {@link EventPublishingRunListener} execution.
+ * {@link org.springframework.boot.SpringApplicationRunListener} before org.springframework.boot.context.event.EventPublishingRunListener execution.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 0.2.2
@@ -76,20 +75,6 @@ public class SpringApplicationRunListener implements org.springframework.boot.Sp
     }
     
     @Override
-    public void started(ConfigurableApplicationContext context) {
-        for (NacosApplicationListener nacosApplicationListener : nacosApplicationListeners) {
-            nacosApplicationListener.started(context);
-        }
-    }
-    
-    @Override
-    public void running(ConfigurableApplicationContext context) {
-        for (NacosApplicationListener nacosApplicationListener : nacosApplicationListeners) {
-            nacosApplicationListener.running(context);
-        }
-    }
-    
-    @Override
     public void failed(ConfigurableApplicationContext context, Throwable exception) {
         for (NacosApplicationListener nacosApplicationListener : nacosApplicationListeners) {
             nacosApplicationListener.failed(context, exception);
@@ -97,7 +82,7 @@ public class SpringApplicationRunListener implements org.springframework.boot.Sp
     }
     
     /**
-     * Before {@link EventPublishingRunListener}.
+     * Before org.springframework.boot.context.event.EventPublishingRunListener.
      *
      * @return HIGHEST_PRECEDENCE
      */
