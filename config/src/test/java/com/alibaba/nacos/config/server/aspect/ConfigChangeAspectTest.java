@@ -122,15 +122,14 @@ class ConfigChangeAspectTest {
         Mockito.when(configChangePluginService.executeType()).thenReturn(ConfigChangeExecuteTypes.EXECUTE_AFTER_TYPE);
         ProceedingJoinPoint proceedingJoinPoint = Mockito.mock(ProceedingJoinPoint.class);
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        
+
         String srcUser = "user12324";
         String dataId = "d1";
         String group = "g1";
         String tenant = "t1";
         Mockito.when(proceedingJoinPoint.proceed(any())).thenReturn("mock success return");
-        Object o = configChangeAspect.publishOrUpdateConfigAround(proceedingJoinPoint, request, response, dataId, group, tenant, "c1", null,
-                null, srcUser, null, null, null, null, null);
+        Object o = configChangeAspect.publishOrUpdateConfigAround(proceedingJoinPoint, request, dataId, group, tenant, "c1", null,
+                null, srcUser, null, null, null, null, null,null, null);
         Thread.sleep(20L);
         
         // expect service executed.

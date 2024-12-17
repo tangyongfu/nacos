@@ -153,7 +153,7 @@ public class ConfigController {
     @PostMapping
     @TpsControl(pointName = "ConfigPublish")
     @Secured(action = ActionTypes.WRITE, signType = SignType.CONFIG)
-    public Boolean publishConfig(HttpServletRequest request, HttpServletResponse response,
+    public Boolean publishConfig(HttpServletRequest request,
             @RequestParam(value = "dataId") String dataId, @RequestParam(value = "group") String group,
             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant,
             @RequestParam(value = "content") String content, @RequestParam(value = "tag", required = false) String tag,
@@ -278,7 +278,7 @@ public class ConfigController {
      */
     @DeleteMapping
     @Secured(action = ActionTypes.WRITE, signType = SignType.CONFIG)
-    public Boolean deleteConfig(HttpServletRequest request, HttpServletResponse response,
+    public Boolean deleteConfig(HttpServletRequest request,
             @RequestParam("dataId") String dataId, @RequestParam("group") String group,
             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant,
             @RequestParam(value = "tag", required = false) String tag) throws NacosException {

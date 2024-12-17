@@ -52,13 +52,13 @@ public class ConfigChangeBatchListenRequestHandler
     @TpsControl(pointName = "ConfigListen")
     @Secured(action = ActionTypes.READ, signType = SignType.CONFIG)
     @ExtractorManager.Extractor(rpcExtractor = ConfigBatchListenRequestParamExtractor.class)
-    public ConfigChangeBatchListenResponse handle(ConfigBatchListenRequest configChangeListenRequest, RequestMeta meta)
+    public ConfigChangeBatchListenResponse handle(ConfigBatchListenRequest request, RequestMeta meta)
             throws NacosException {
         String connectionId = StringPool.get(meta.getConnectionId());
-        String tag = configChangeListenRequest.getHeader(Constants.VIPSERVER_TAG);
+        String tag = request.getHeader(Constants.VIPSERVER_TAG);
         ParamUtils.checkParam(tag);
         ConfigChangeBatchListenResponse configChangeBatchListenResponse = new ConfigChangeBatchListenResponse();
-        for (ConfigBatchListenRequest.ConfigListenContext listenContext : configChangeListenRequest
+        for (ConfigBatchListenRequest.ConfigListenContext listenContext : request
                 .getConfigListenContexts()) {
             String groupKey = GroupKey2
                     .getKey(listenContext.getDataId(), listenContext.getGroup(), listenContext.getTenant());
@@ -66,7 +66,7 @@ public class ConfigChangeBatchListenRequestHandler
             
             String md5 = StringPool.get(listenContext.getMd5());
             
-            if (configChangeListenRequest.isListen()) {
+            if (request.isListen()) {
                 configChangeListenContext.addListen(groupKey, md5, connectionId);
                 boolean isUptoDate = ConfigCacheService.isUptodate(groupKey, md5, meta.getClientIp(), tag);
                 if (!isUptoDate) {

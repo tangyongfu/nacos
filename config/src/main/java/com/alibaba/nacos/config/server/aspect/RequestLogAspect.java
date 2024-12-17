@@ -36,7 +36,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -53,8 +52,9 @@ public class RequestLogAspect {
      * Publish config.
      */
     private static final String CLIENT_INTERFACE_PUBLISH_SINGLE_CONFIG =
-            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.publishConfig(..)) && args"
-                    + "(request,response,dataId,group,tenant,content,..)";
+            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.publishConfig(..)) "
+                    + "&& args(request,dataId,group,tenant,content,tag,appName,srcUser,"
+                    + "configTags,desc,use,effect,type,schema,encryptedDataKey)";
     
     /**
      * Publish config.
@@ -69,7 +69,7 @@ public class RequestLogAspect {
      */
     private static final String CLIENT_INTERFACE_GET_CONFIG =
             "execution(* com.alibaba.nacos.config.server.controller.ConfigController.getConfig(..)) && args(request,"
-                    + "response,dataId,group,tenant,..)";
+                    + "response,dataId,group,tenant,tag)";
     
     /**
      * Get config.
@@ -83,8 +83,8 @@ public class RequestLogAspect {
      * Remove config.
      */
     private static final String CLIENT_INTERFACE_REMOVE_ALL_CONFIG =
-            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.deleteConfig(..)) && args(request,"
-                    + "response,dataId,group,tenant,..)";
+            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.deleteConfig(..)) "
+                    + "&& args(request,dataId,group,tenant,tag)";
     
     /**
      * Remove config.
@@ -118,17 +118,18 @@ public class RequestLogAspect {
         MetricsMonitor.getWriteConfigRpcRtTimer().record(rtHolder.get(), TimeUnit.MILLISECONDS);
         return retVal;
     }
-    
+
     /**
      * PublishSingle.
      */
     @Around(CLIENT_INTERFACE_PUBLISH_SINGLE_CONFIG)
-    public Object interfacePublishSingle(ProceedingJoinPoint pjp, HttpServletRequest request,
-            HttpServletResponse response, String dataId, String group, String tenant, String content) throws Throwable {
+    public Object interfacePublishSingle(ProceedingJoinPoint pjp, HttpServletRequest request, String dataId, String group, String tenant, String content, String tag,
+                                         String appName, String srcUser, String configTags, String desc, String use, String effect, String type,
+                                         String schema,String encryptedDataKey) throws Throwable {
         final String md5 = content == null ? null : MD5Utils.md5Hex(content, Constants.ENCODE);
         MetricsMonitor.getPublishMonitor().incrementAndGet();
         AtomicLong rtHolder = new AtomicLong();
-        Object retVal = logClientRequest("publish", pjp, request, response, dataId, group, tenant, md5, rtHolder);
+        Object retVal = logClientRequest("publish", pjp, request, dataId, group, tenant, md5, rtHolder);
         MetricsMonitor.getWriteConfigRtTimer().record(rtHolder.get(), TimeUnit.MILLISECONDS);
         return retVal;
     }
@@ -137,9 +138,9 @@ public class RequestLogAspect {
      * RemoveAll.
      */
     @Around(CLIENT_INTERFACE_REMOVE_ALL_CONFIG)
-    public Object interfaceRemoveAll(ProceedingJoinPoint pjp, HttpServletRequest request, HttpServletResponse response,
-            String dataId, String group, String tenant) throws Throwable {
-        return logClientRequest("remove", pjp, request, response, dataId, group, tenant, null, null);
+    public Object interfaceRemoveAll(ProceedingJoinPoint pjp, HttpServletRequest request,
+            String dataId, String group, String tenant, String tag) throws Throwable {
+        return logClientRequest("remove", pjp, request, dataId, group, tenant, null, null);
     }
     
     /**
@@ -156,13 +157,13 @@ public class RequestLogAspect {
      * GetConfig.
      */
     @Around(CLIENT_INTERFACE_GET_CONFIG)
-    public Object interfaceGetConfig(ProceedingJoinPoint pjp, HttpServletRequest request, HttpServletResponse response,
-            String dataId, String group, String tenant) throws Throwable {
+    public Object interfaceGetConfig(ProceedingJoinPoint pjp, HttpServletRequest request,
+            String dataId, String group, String tenant, String tag) throws Throwable {
         final String groupKey = GroupKey2.getKey(dataId, group, tenant);
         final String md5 = ConfigCacheService.getContentMd5(groupKey);
         MetricsMonitor.getConfigMonitor().incrementAndGet();
         AtomicLong rtHolder = new AtomicLong();
-        Object retVal = logClientRequest("get", pjp, request, response, dataId, group, tenant, md5, rtHolder);
+        Object retVal = logClientRequest("get", pjp, request, dataId, group, tenant, md5, rtHolder);
         MetricsMonitor.getReadConfigRtTimer().record(rtHolder.get(), TimeUnit.MILLISECONDS);
         return retVal;
     }
@@ -187,7 +188,7 @@ public class RequestLogAspect {
      * Client api request log rt | status | requestIp | opType | dataId | group | datumId | md5.
      */
     private Object logClientRequest(String requestType, ProceedingJoinPoint pjp, HttpServletRequest request,
-            HttpServletResponse response, String dataId, String group, String tenant, String md5, AtomicLong rtHolder) throws Throwable {
+                                    String dataId, String group, String tenant, String md5, AtomicLong rtHolder) throws Throwable {
         final String requestIp = RequestUtil.getRemoteIp(request);
         String appName = request.getHeader(RequestUtil.CLIENT_APPNAME_HEADER);
         final long st = System.currentTimeMillis();

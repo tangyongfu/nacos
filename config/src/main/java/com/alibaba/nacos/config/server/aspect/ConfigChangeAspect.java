@@ -44,7 +44,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -72,7 +71,8 @@ public class ConfigChangeAspect {
      */
     private static final String CLIENT_INTERFACE_PUBLISH_CONFIG =
             "execution(* com.alibaba.nacos.config.server.controller.ConfigController.publishConfig(..)) "
-                    + "&& args(request,response,dataId,group,tenant,content,tag,appName,srcUser,configTags,desc,use,effect,type,..) "
+                    + "&& args(request,dataId,group,tenant,content,tag,appName,srcUser,"
+                    + "configTags,desc,use,effect,type,schema,encryptedDataKey)"
                     + "&& @annotation(org.springframework.web.bind.annotation.PostMapping)";
     
     /**
@@ -88,7 +88,7 @@ public class ConfigChangeAspect {
      */
     private static final String CLIENT_INTERFACE_REMOVE_CONFIG =
             "execution(* com.alibaba.nacos.config.server.controller.ConfigController.deleteConfig(..))"
-                    + " && args(request,response,dataId,group,tenant,..)";
+                    + " && args(request,dataId,group,tenant,tag)";
     
     /**
      * Remove config by ids through http.
@@ -121,14 +121,13 @@ public class ConfigChangeAspect {
         this.configChangeConfigs = configChangeConfigs;
         configChangeManager = ConfigChangePluginManager.getInstance();
     }
-    
+
     /**
      * Publish or update config.
      */
     @Around(CLIENT_INTERFACE_PUBLISH_CONFIG)
-    Object publishOrUpdateConfigAround(ProceedingJoinPoint pjp, HttpServletRequest request,
-            HttpServletResponse response, String dataId, String group, String tenant, String content, String tag,
-            String appName, String srcUser, String configTags, String desc, String use, String effect, String type)
+    Object publishOrUpdateConfigAround(ProceedingJoinPoint pjp, HttpServletRequest request, String dataId, String group, String tenant, String content, String tag,
+            String appName, String srcUser, String configTags, String desc, String use, String effect, String type, String schema,String encryptedDataKey)
             throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.PUBLISH_BY_HTTP;
         final List<ConfigChangePluginService> pluginServices = getPluginServices(
@@ -157,8 +156,8 @@ public class ConfigChangeAspect {
      * Remove config.
      */
     @Around(CLIENT_INTERFACE_REMOVE_CONFIG)
-    Object removeConfigByIdAround(ProceedingJoinPoint pjp, HttpServletRequest request, HttpServletResponse response,
-            String dataId, String group, String tenant) throws Throwable {
+    Object removeConfigByIdAround(ProceedingJoinPoint pjp, HttpServletRequest request,
+            String dataId, String group, String tenant, String tag) throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.REMOVE_BY_HTTP;
         final List<ConfigChangePluginService> pluginServices = getPluginServices(
                 configChangePointCutType);
