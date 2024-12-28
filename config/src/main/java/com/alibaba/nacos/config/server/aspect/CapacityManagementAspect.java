@@ -47,13 +47,12 @@ public class CapacityManagementAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(CapacityManagementAspect.class);
     
     private static final String SYNC_UPDATE_CONFIG_ALL =
-            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.publishConfig(..)) "
-                    + "&& args(request,dataId,group,tenant,content,tag,appName,srcUser,"
-                    + "configTags,desc,use,effect,type,schema,encryptedDataKey)";
+            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.publishConfig(..)) && args"
+                    + "(request,response,dataId,group,content,appName,srcUser,tenant,tag,..)";
     
     private static final String DELETE_CONFIG =
-            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.deleteConfig(..)) "
-                    + "&& args(request,dataId,group,tenant,tag)";
+            "execution(* com.alibaba.nacos.config.server.controller.ConfigController.deleteConfig(..)) && args"
+                    + "(request,response,dataId,group,tenant,..)";
 
     private final CapacityService capacityService;
 
@@ -68,10 +67,9 @@ public class CapacityManagementAspect {
      * Need to judge the size of content whether to exceed the limitation.
      */
     @Around(SYNC_UPDATE_CONFIG_ALL)
-    public Object aroundSyncUpdateConfigAll(ProceedingJoinPoint pjp, HttpServletRequest request, String dataId, String group,
-                                            String tenant, String content, String tag, String appName, String srcUser,
-                                            String configTags, String desc, String use, String effect, String type,
-                                            String schema,String encryptedDataKey) throws Throwable {
+    public Object aroundSyncUpdateConfigAll(ProceedingJoinPoint pjp, HttpServletRequest request,
+            HttpServletResponse response, String dataId, String group, String content, String appName, String srcUser,
+            String tenant, String tag) throws Throwable {
         if (!PropertyUtil.isManageCapacity()) {
             return pjp.proceed();
         }
@@ -82,7 +80,7 @@ public class CapacityManagementAspect {
                 // do capacity management limitation check for writing or updating config_info table.
                 if (configInfoPersistService.findConfigInfo(dataId, group, tenant) == null) {
                     // Write operation.
-                    return do4Insert(pjp, request, group, tenant, content);
+                    return do4Insert(pjp, request, response, group, tenant, content);
                 }
                 // Update operation.
                 return do4Update(pjp, request, response, dataId, group, tenant, content);

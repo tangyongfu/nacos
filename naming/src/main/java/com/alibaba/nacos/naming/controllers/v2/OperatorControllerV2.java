@@ -35,7 +35,6 @@ import com.alibaba.nacos.naming.monitor.MetricsMonitor;
 import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
 import com.alibaba.nacos.sys.env.EnvUtil;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -67,7 +66,7 @@ public class OperatorControllerV2 {
     private final ClientManager clientManager;
     
     public OperatorControllerV2(SwitchManager switchManager, ServerStatusManager serverStatusManager,
-            SwitchDomain switchDomain, @Qualifier("clientManager") ClientManager clientManager) {
+            SwitchDomain switchDomain, ClientManager clientManager) {
         this.switchManager = switchManager;
         this.serverStatusManager = serverStatusManager;
         this.switchDomain = switchDomain;

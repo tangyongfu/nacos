@@ -63,13 +63,13 @@ public class ConfigRemoveRequestHandler extends RequestHandler<ConfigRemoveReque
     @TpsControl(pointName = "ConfigRemove")
     @Secured(action = ActionTypes.WRITE, signType = SignType.CONFIG)
     @ExtractorManager.Extractor(rpcExtractor = ConfigRequestParamExtractor.class)
-    public ConfigRemoveResponse handle(ConfigRemoveRequest request, RequestMeta meta)
+    public ConfigRemoveResponse handle(ConfigRemoveRequest configRemoveRequest, RequestMeta meta)
             throws NacosException {
         // check tenant
-        String tenant = request.getTenant();
-        String dataId = request.getDataId();
-        String group = request.getGroup();
-        String tag = request.getTag();
+        String tenant = configRemoveRequest.getTenant();
+        String dataId = configRemoveRequest.getDataId();
+        String group = configRemoveRequest.getGroup();
+        String tag = configRemoveRequest.getTag();
         
         try {
             ParamUtils.checkTenant(tenant);

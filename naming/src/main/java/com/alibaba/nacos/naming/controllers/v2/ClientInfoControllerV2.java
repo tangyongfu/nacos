@@ -40,7 +40,6 @@ import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.naming.pojo.Subscriber;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,8 +70,8 @@ public class ClientInfoControllerV2 {
     
     private final ClientServiceIndexesManager clientServiceIndexesManager;
     
-    public ClientInfoControllerV2(@Qualifier("clientManager") ClientManager clientManager, ConnectionManager connectionManager,
-                                  ClientServiceIndexesManager clientServiceIndexesManager) {
+    public ClientInfoControllerV2(ClientManager clientManager, ConnectionManager connectionManager,
+            ClientServiceIndexesManager clientServiceIndexesManager) {
         this.clientManager = clientManager;
         this.connectionManager = connectionManager;
         this.clientServiceIndexesManager = clientServiceIndexesManager;
