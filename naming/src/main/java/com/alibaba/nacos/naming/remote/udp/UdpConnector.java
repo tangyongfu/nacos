@@ -19,18 +19,16 @@ package com.alibaba.nacos.naming.remote.udp;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.remote.PushCallBack;
 import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.alibaba.nacos.naming.constants.Constants;
 import com.alibaba.nacos.naming.misc.GlobalExecutor;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.monitor.MetricsMonitor;
 import com.alibaba.nacos.naming.push.v2.NoRequiredRetryException;
-import com.alibaba.nacos.naming.constants.Constants;
+import com.alibaba.nacos.sys.env.EnvUtil;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -55,8 +53,14 @@ public class UdpConnector {
     public UdpConnector() throws SocketException {
         this.ackMap = new ConcurrentHashMap<>();
         this.callbackMap = new ConcurrentHashMap<>();
-        this.udpSocket = new DatagramSocket();
+        this.udpSocket = new DatagramSocket(getListenAddress());
         GlobalExecutor.scheduleUdpReceiver(new UdpReceiver());
+    }
+
+    private SocketAddress getListenAddress() {
+        String address = EnvUtil.getProperty(Constants.CLUSTER_SERVER_LISTEN_ADDRESS_PROPERTY, String.class, "0.0.0.0");
+        int listenPort = EnvUtil.getPort();
+        return new InetSocketAddress(address, listenPort);
     }
     
     public void shutdown() {

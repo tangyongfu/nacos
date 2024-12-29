@@ -84,7 +84,7 @@ public final class Constants {
      * The weight of instance according to instance self publish.
      */
     public static final String PUBLISH_INSTANCE_WEIGHT = "publishInstanceWeight";
-    
+
     /**
      * The weight of instance according to instance self publish.
      */
@@ -109,5 +109,7 @@ public final class Constants {
      * Min value of instance weight.
      */
     public static final double MIN_WEIGHT_VALUE = 0.00D;
+
+    public static final String CLUSTER_SERVER_LISTEN_ADDRESS_PROPERTY = "nacos.remote.udp-receiver.address";
     
 }
