@@ -130,4 +130,9 @@ public class GrpcSdkServer extends BaseGrpcServer {
     protected String getSource() {
         return RemoteConstants.LABEL_SOURCE_SDK;
     }
+
+    @Override
+    public String getAddress() {
+        return EnvUtil.getProperty(GrpcServerConstants.GrpcConfig.SDK_SERVER_LISTEN_ADDRESS_PROPERTY, String.class);
+    }
 }

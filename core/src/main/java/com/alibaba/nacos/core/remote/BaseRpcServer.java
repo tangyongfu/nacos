@@ -122,5 +122,12 @@ public abstract class BaseRpcServer {
      */
     @PreDestroy
     public abstract void shutdownServer();
+
+    /**
+     * get listen address.
+     *
+     * @return service listen address.
+     */
+    public abstract String getAddress();
     
 }

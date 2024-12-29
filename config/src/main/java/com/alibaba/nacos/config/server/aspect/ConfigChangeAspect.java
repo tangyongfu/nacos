@@ -38,6 +38,7 @@ import com.alibaba.nacos.plugin.config.spi.ConfigChangePluginService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -114,18 +115,26 @@ public class ConfigChangeAspect {
                     + "&& args(request,srcUser,namespace,policy,file)";
     
     private final ConfigChangeConfigs configChangeConfigs;
-    
+
     private ConfigChangePluginManager configChangeManager;
-    
+
     public ConfigChangeAspect(ConfigChangeConfigs configChangeConfigs) {
         this.configChangeConfigs = configChangeConfigs;
         configChangeManager = ConfigChangePluginManager.getInstance();
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_PUBLISH_CONFIG)
+    public void publishOrUpdateConfigAroundPointcut(HttpServletRequest request, HttpServletResponse response,
+                                                    String dataId, String group, String tenant, String content, String tag,
+                                                    String appName, String srcUser, String configTags, String desc, String use,
+                                                    String effect, String type) { }
+
     /**
      * Publish or update config.
      */
-    @Around(CLIENT_INTERFACE_PUBLISH_CONFIG)
+    @Around(value = "publishOrUpdateConfigAroundPointcut(request,response,dataId,group,tenant,content,tag,appName,srcUser,"
+            + "configTags,desc,use,effect,type)",
+            argNames = "pjp,request,response,dataId,group,tenant,content,tag,appName,srcUser,configTags,desc,use,effect,type")
     Object publishOrUpdateConfigAround(ProceedingJoinPoint pjp, HttpServletRequest request,
             HttpServletResponse response, String dataId, String group, String tenant, String content, String tag,
             String appName, String srcUser, String configTags, String desc, String use, String effect, String type)
@@ -152,11 +161,15 @@ public class ConfigChangeAspect {
         configChangeRequest.setArg("type", type);
         return configChangeServiceHandle(pjp, pluginServices, configChangeRequest);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_REMOVE_CONFIG)
+    public void removeConfigByIdAroundPointcut(HttpServletRequest request, HttpServletResponse response, String dataId,
+                                               String group, String tenant) { }
+
     /**
      * Remove config.
      */
-    @Around(CLIENT_INTERFACE_REMOVE_CONFIG)
+    @Around(value = "removeConfigByIdAroundPointcut(request,response,dataId,group,tenant)", argNames = "pjp,request,response,dataId,group,tenant")
     Object removeConfigByIdAround(ProceedingJoinPoint pjp, HttpServletRequest request, HttpServletResponse response,
             String dataId, String group, String tenant) throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.REMOVE_BY_HTTP;
@@ -175,11 +188,14 @@ public class ConfigChangeAspect {
         configChangeRequest.setArg("use", RequestUtil.getSrcUserName(request));
         return configChangeServiceHandle(pjp, pluginServices, configChangeRequest);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_BATCH_REMOVE_CONFIG)
+    public void removeConfigByIdsAroundPointcut(HttpServletRequest request, List<Long> ids) { }
+
     /**
      * Remove config by ids.
      */
-    @Around(CLIENT_INTERFACE_BATCH_REMOVE_CONFIG)
+    @Around(value = "removeConfigByIdsAroundPointcut(request,ids)", argNames = "pjp,request,ids")
     public Object removeConfigByIdsAround(ProceedingJoinPoint pjp, HttpServletRequest request, List<Long> ids)
             throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.REMOVE_BATCH_HTTP;
@@ -196,11 +212,14 @@ public class ConfigChangeAspect {
         configChangeRequest.setArg("use", RequestUtil.getSrcUserName(request));
         return configChangeServiceHandle(pjp, pluginServices, configChangeRequest);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_IMPORT_CONFIG)
+    public void importConfigPointcut(HttpServletRequest request, String srcUser, String namespace, SameConfigPolicy policy, MultipartFile file) { }
+
     /**
      * Import config.
      */
-    @Around(CLIENT_INTERFACE_IMPORT_CONFIG)
+    @Around(value = "importConfigPointcut(request,srcUser,namespace,policy,file)", argNames = "pjp, request, srcUser, namespace, policy, file")
     public Object importConfigAround(ProceedingJoinPoint pjp, HttpServletRequest request, String srcUser,
             String namespace, SameConfigPolicy policy, MultipartFile file) throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.IMPORT_BY_HTTP;
@@ -220,11 +239,14 @@ public class ConfigChangeAspect {
         configChangeRequest.setArg("use", RequestUtil.getSrcUserName(request));
         return configChangeServiceHandle(pjp, pluginServices, configChangeRequest);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_PUBLISH_CONFIG_RPC)
+    public void publishConfigAroundRpcPointcut(ConfigPublishRequest request, RequestMeta meta) { }
+
     /**
      * Publish or update config.
      */
-    @Around(CLIENT_INTERFACE_PUBLISH_CONFIG_RPC)
+    @Around(value = "publishConfigAroundRpcPointcut(request,meta)", argNames = "pjp, request, meta")
     Object publishConfigAroundRpc(ProceedingJoinPoint pjp, ConfigPublishRequest request, RequestMeta meta)
             throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.PUBLISH_BY_RPC;
@@ -251,11 +273,14 @@ public class ConfigChangeAspect {
         configChangeRequest.setArg("use", request.getAdditionParam("use"));
         return configChangeServiceHandle(pjp, pluginServices, configChangeRequest);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_REMOVE_CONFIG_RPC)
+    public void removeConfigAroundRpcPointcut(ConfigRemoveRequest request, RequestMeta meta) { }
+
     /**
      * Remove config.
      */
-    @Around(CLIENT_INTERFACE_REMOVE_CONFIG_RPC)
+    @Around(value = "removeConfigAroundRpcPointcut(request,meta)", argNames = "pjp,request,meta")
     Object removeConfigAroundRpc(ProceedingJoinPoint pjp, ConfigRemoveRequest request, RequestMeta meta)
             throws Throwable {
         final ConfigChangePointCutTypes configChangePointCutType = ConfigChangePointCutTypes.REMOVE_BY_RPC;

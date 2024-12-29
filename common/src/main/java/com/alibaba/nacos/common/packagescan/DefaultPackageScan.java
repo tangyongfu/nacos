@@ -16,7 +16,7 @@
 
 package com.alibaba.nacos.common.packagescan;
 
-import com.alibaba.nacos.common.packagescan.classreading.ClassReader;
+import org.springframework.asm.ClassReader;
 import com.alibaba.nacos.common.packagescan.resource.PathMatchingResourcePatternResolver;
 import com.alibaba.nacos.common.packagescan.resource.Resource;
 import com.alibaba.nacos.common.packagescan.resource.ResourcePatternResolver;

@@ -98,5 +98,9 @@ final class GrpcServerConstants {
         static final long DEFAULT_GRPC_KEEP_ALIVE_TIMEOUT = TimeUnit.NANOSECONDS.toMillis(GrpcUtil.DEFAULT_SERVER_KEEPALIVE_TIMEOUT_NANOS);
         
         static final long DEFAULT_GRPC_PERMIT_KEEP_ALIVE_TIME = TimeUnit.MINUTES.toMillis(5L);
+
+        static final String SDK_SERVER_LISTEN_ADDRESS_PROPERTY = NACOS_REMOTE_SERVER_GRPC_SDK_PREFIX + "address";
+
+        static final String CLUSTER_SERVER_LISTEN_ADDRESS_PROPERTY = NACOS_REMOTE_SERVER_GRPC_CLUSTER_PREFIX + "address";
     }
 }

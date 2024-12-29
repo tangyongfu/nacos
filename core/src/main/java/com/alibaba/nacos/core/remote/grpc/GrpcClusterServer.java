@@ -132,4 +132,9 @@ public class GrpcClusterServer extends BaseGrpcServer {
     protected String getSource() {
         return RemoteConstants.LABEL_SOURCE_CLUSTER;
     }
+
+    @Override
+    public String getAddress() {
+        return EnvUtil.getProperty(GrpcServerConstants.GrpcConfig.CLUSTER_SERVER_LISTEN_ADDRESS_PROPERTY, String.class);
+    }
 }

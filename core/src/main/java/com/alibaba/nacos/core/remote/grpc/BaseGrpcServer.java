@@ -19,6 +19,7 @@ package com.alibaba.nacos.core.remote.grpc;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.grpc.auto.Payload;
 import com.alibaba.nacos.api.remote.response.ErrorResponse;
+import com.alibaba.nacos.api.utils.StringUtils;
 import com.alibaba.nacos.common.remote.ConnectionType;
 import com.alibaba.nacos.common.remote.client.grpc.GrpcUtils;
 import com.alibaba.nacos.core.monitor.MetricsMonitor;
@@ -45,6 +46,7 @@ import io.grpc.stub.StreamObserver;
 import io.grpc.util.MutableHandlerRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,7 +90,11 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
     public void startServer() throws Exception {
         final MutableHandlerRegistry handlerRegistry = new MutableHandlerRegistry();
         addServices(handlerRegistry, getSeverInterceptors().toArray(new ServerInterceptor[0]));
-        NettyServerBuilder builder = NettyServerBuilder.forPort(getServicePort()).executor(getRpcExecutor());
+        NettyServerBuilder builder = NettyServerBuilder.forPort(getServicePort());
+        if (!StringUtils.isBlank(getAddress())) {
+            builder = NettyServerBuilder.forAddress(new InetSocketAddress(getAddress(), getServicePort()));
+        }
+        builder = builder.executor(getRpcExecutor());
         
         Optional<InternalProtocolNegotiator.ProtocolNegotiator> negotiator = newProtocolNegotiator();
         if (negotiator.isPresent()) {

@@ -33,6 +33,7 @@ import com.alibaba.nacos.config.server.utils.RequestUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -101,12 +102,14 @@ public class RequestLogAspect {
     private static final String CLIENT_INTERFACE_LISTEN_CONFIG_RPC =
             "execution(* com.alibaba.nacos.core.remote.RequestHandler.handleRequest(..)) "
                     + " && target(com.alibaba.nacos.config.server.remote.ConfigChangeBatchListenRequestHandler) && args(request,meta)";
-    
-    
+
+    @Pointcut(CLIENT_INTERFACE_PUBLISH_SINGLE_CONFIG_RPC)
+    public void interfacePublishSingleRpcPointcut(ConfigPublishRequest request, RequestMeta meta) { }
+
     /**
      * PublishSingle.
      */
-    @Around(CLIENT_INTERFACE_PUBLISH_SINGLE_CONFIG_RPC)
+    @Around(value = "interfacePublishSingleRpcPointcut(request,meta)", argNames = "pjp,request,meta")
     public Object interfacePublishSingleRpc(ProceedingJoinPoint pjp, ConfigPublishRequest request, RequestMeta meta)
             throws Throwable {
         final String md5 =
@@ -118,11 +121,16 @@ public class RequestLogAspect {
         MetricsMonitor.getWriteConfigRpcRtTimer().record(rtHolder.get(), TimeUnit.MILLISECONDS);
         return retVal;
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_PUBLISH_SINGLE_CONFIG)
+    public void interfacePublishSinglePointcut(HttpServletRequest request, HttpServletResponse response, String dataId,
+                                               String group, String tenant, String content) { }
+
     /**
      * PublishSingle.
      */
-    @Around(CLIENT_INTERFACE_PUBLISH_SINGLE_CONFIG)
+    @Around(value = "interfacePublishSinglePointcut(request,response,dataId,group,tenant,content)",
+            argNames = "pjp,request,response,dataId,group,tenant,content")
     public Object interfacePublishSingle(ProceedingJoinPoint pjp, HttpServletRequest request,
             HttpServletResponse response, String dataId, String group, String tenant, String content) throws Throwable {
         final String md5 = content == null ? null : MD5Utils.md5Hex(content, Constants.ENCODE);
@@ -132,30 +140,40 @@ public class RequestLogAspect {
         MetricsMonitor.getWriteConfigRtTimer().record(rtHolder.get(), TimeUnit.MILLISECONDS);
         return retVal;
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_REMOVE_ALL_CONFIG)
+    public void interfaceRemoveAllPointcut(HttpServletRequest request, HttpServletResponse response, String dataId, String group, String tenant) { }
+
     /**
      * RemoveAll.
      */
-    @Around(CLIENT_INTERFACE_REMOVE_ALL_CONFIG)
+    @Around(value = "interfaceRemoveAllPointcut(request,response,dataId,group,tenant)", argNames = "pjp,request,response,dataId,group,tenant")
     public Object interfaceRemoveAll(ProceedingJoinPoint pjp, HttpServletRequest request, HttpServletResponse response,
             String dataId, String group, String tenant) throws Throwable {
         return logClientRequest("remove", pjp, request, response, dataId, group, tenant, null, null);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_REMOVE_ALL_CONFIG_RPC)
+    public void interfaceRemoveAllRpcPointcut(ConfigRemoveRequest request, RequestMeta meta) { }
+
     /**
      * RemoveAll.
      */
-    @Around(CLIENT_INTERFACE_REMOVE_ALL_CONFIG_RPC)
+    @Around(value = "interfaceRemoveAllRpcPointcut(request,meta)", argNames = "pjp,request,meta")
     public Object interfaceRemoveAllRpc(ProceedingJoinPoint pjp, ConfigRemoveRequest request, RequestMeta meta)
             throws Throwable {
         return logClientRequestRpc("remove", pjp, request, meta, request.getDataId(), request.getGroup(),
                 request.getTenant(), null, null);
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_GET_CONFIG)
+    public void interfaceGetConfigPointcut(HttpServletRequest request, HttpServletResponse response, String dataId,
+                                           String group, String tenant) { }
+
     /**
      * GetConfig.
      */
-    @Around(CLIENT_INTERFACE_GET_CONFIG)
+    @Around(value = "interfaceGetConfigPointcut(request,response,dataId,group,tenant)", argNames = "pjp,request,response,dataId,group,tenant")
     public Object interfaceGetConfig(ProceedingJoinPoint pjp, HttpServletRequest request, HttpServletResponse response,
             String dataId, String group, String tenant) throws Throwable {
         final String groupKey = GroupKey2.getKey(dataId, group, tenant);
@@ -166,11 +184,14 @@ public class RequestLogAspect {
         MetricsMonitor.getReadConfigRtTimer().record(rtHolder.get(), TimeUnit.MILLISECONDS);
         return retVal;
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_GET_CONFIG_RPC)
+    public void interfaceGetConfigRpcPointcut(ConfigQueryRequest request, RequestMeta meta) { }
+
     /**
      * GetConfig.
      */
-    @Around(CLIENT_INTERFACE_GET_CONFIG_RPC)
+    @Around(value = "interfaceGetConfigRpcPointcut(request,meta)", argNames = "pjp,request,meta")
     public Object interfaceGetConfigRpc(ProceedingJoinPoint pjp, ConfigQueryRequest request, RequestMeta meta)
             throws Throwable {
         final String groupKey = GroupKey2.getKey(request.getDataId(), request.getGroup(), request.getTenant());
@@ -224,11 +245,14 @@ public class RequestLogAspect {
                 group, tenant, md5, appName);
         return retVal;
     }
-    
+
+    @Pointcut(CLIENT_INTERFACE_LISTEN_CONFIG_RPC)
+    public void interfaceListenConfigRpcPointcut(ConfigBatchListenRequest request, RequestMeta meta) { }
+
     /**
      * GetConfig.
      */
-    @Around(CLIENT_INTERFACE_LISTEN_CONFIG_RPC)
+    @Around(value = "interfaceListenConfigRpcPointcut(request,meta)", argNames = "pjp,request,meta")
     public Object interfaceListenConfigRpc(ProceedingJoinPoint pjp, ConfigBatchListenRequest request,
             RequestMeta meta) throws Throwable {
         MetricsMonitor.getConfigMonitor().incrementAndGet();
